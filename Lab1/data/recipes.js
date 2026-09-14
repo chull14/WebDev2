@@ -1,6 +1,6 @@
 import { recipes, users } from "../config/mongoCollections";
 import { checkId, checkString, checkTitle, checkSteps, checkCookingSkill, checkIngredients } from "../helpers";
-import { ObjectId, ReturnDocument } from "mongodb";
+import { ObjectId } from "mongodb";
 
 export async function getAllRecipes(page = 1) { // GET
     page = Number(page);
@@ -8,9 +8,10 @@ export async function getAllRecipes(page = 1) { // GET
 
     const recipeCol = await recipes();
     const fiftyRecipes = await recipeCol
-        .aggregate(
-                { $skip : 50 * (page-1)},
-                {$limit : 50 }).toArray();
+        .aggregate([
+                { $skip : 50 * (page-1) },
+                { $limit : 50 }
+        ]).toArray();
     
     if (fiftyRecipes.length === 0) throw `No recipes found on page ${page}`;
     // this should throw a 404 error if recipes aren't found on a page

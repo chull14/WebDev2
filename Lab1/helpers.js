@@ -22,7 +22,13 @@ export function checkId(value) {
     return value;
 }
 
-// recipe field validators
+
+/* 
+
+RECIPE FIELD VALIDATORS
+
+*/
+
 export const checkTitle = (title) => checkString(title);
 
 export const checkIngredients = (ingredients) => {
@@ -50,4 +56,24 @@ export const checkCookingSkill = (skill) => {
     const skills = ['Novice', 'Intermediate', 'Advanced'];
     if (!skills.includes(skill)) throw 'Cooking skill must be either Novice, Intermediate, or Advanced';
     return skill;
+};
+
+/*
+
+USER FIELD VALIDATORS
+
+*/ 
+
+export const checkUsername = (username) => {
+    username = checkString(username);
+    if (!/^[a-zA-Z0-9]{3,}$/.test(username)) throw 'Username must be at least 3 alphanumeric characters';
+    return username;
+};
+
+export const checkPassword = (password) => {
+    password = checkString(password);
+    if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z0-9]).{6,}$/.test(password)) {
+        throw 'Password must be at least 6 characters with an uppercase letter, a lowercase letter, a number, and a special character';
+    }
+    return password;
 };
