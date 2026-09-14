@@ -7,9 +7,10 @@ import {
     createComment, 
     deleteComment, 
     likeRecipe 
-} from '../data/recipes';
-import { checkCookingSkill, checkId, checkIngredients, checkSteps, checkTitle } from '../helpers';
+} from '../data/recipes.js';
+import { checkString, checkCookingSkill, checkId, checkIngredients, checkSteps, checkTitle } from '../helpers/validators.js';
 import { requireLogin } from '../middleware/auth.js';
+import { sendError } from '../helpers/errors.js';
 
 const router = Router();
 
@@ -26,7 +27,7 @@ router.get('/', async function (req, res) {
         const recipes = await getAllRecipes(page);
         return res.status(200).json(recipes);
     } catch (e) {
-        return res.status(404).json({ error: e });
+        return sendError(res, e);
     }
 });
 
@@ -37,14 +38,14 @@ router.get('/:id', async function (req, res) {
     try {
         recipeId = checkId(recipeId);
     } catch (e) {
-        return res.status(400).json({ error: e });
+        return sendError(res, e);
     };
 
     try {
         const recipe = await getRecipeById(recipeId);
         return res.status(200).json(recipe);
     } catch (e) {
-        return res.status(404).json({ error: e });
+        return sendError(res, e);
     };
 });
 
@@ -55,24 +56,24 @@ router.post('/', requireLogin, async function (req, res) {
         return res.status(400).json({ error: 'Must provide full recipe details' });
     };
 
-    let title, ingredients, cookingSkill, steps;
+    let title, ingredients, cookingSkillRequired, steps;
     let userId;
     try {
-        ({ title, ingredients, cookingSkill, steps } = body);
+        ({ title, ingredients, cookingSkillRequired, steps } = body);
         userId = req.session.user._id;
         title = checkTitle(title);
         ingredients = checkIngredients(ingredients);
-        cookingSkill = checkCookingSkill(cookingSkill);
+        cookingSkillRequired = checkCookingSkill(cookingSkillRequired);
         steps = checkSteps(steps);
     } catch (e) {
-        return res.status(400).json({ error: e });
+        return sendError(res, e);
     }
 
     try {
-        const newRecipe = await createRecipe({ title, ingredients, cookingSkill, steps, userId });
+        const newRecipe = await createRecipe({ title, ingredients, cookingSkillRequired, steps, userId });
         return res.status(201).json(newRecipe);
     } catch (e) {
-        return res.status(400).json({ error: e });
+        return sendError(res, e);
     }
 });
 
@@ -94,14 +95,14 @@ router.put('/:id', requireLogin, async function (req, res) {
         if ('cookingSkillRequired' in body) updateObject.cookingSkillRequired = checkCookingSkill(body.cookingSkillRequired);
         if ('steps' in body) updateObject.steps = checkSteps(body.steps);
     } catch (e) {
-        return res.status(400).json({ error: e });
+        return sendError(res, e);
     }
 
     try {
         const updated = await updateRecipe(userId, recipeId, body);
         return res.status(200).json(updated);
     } catch (e) {
-        return res.status(400).json({ error: e });
+        return sendError(res, e);
     }
 });
 
@@ -118,14 +119,14 @@ router.post('/:id/comments', requireLogin, async function (req, res) {
         userId = req.session.user._id;
         comment = checkString(body.comment);
     } catch (e) {
-        return res.status(400).json({ error: e });
+        return sendError(res, e);
     };
 
     try {
         const updatedRecipe = await createComment(recipeId, userId, comment);
         return res.status(201).json(updatedRecipe);
     } catch (e) {
-        return res.status(400).json({ error: e });
+        return sendError(res, e);
     }
 });
 
@@ -137,14 +138,14 @@ router.delete('/:recipeid/:commentid', requireLogin, async function (req, res) {
         commentId = checkId(req.params.commentid);
         userId = req.session.user._id;
     } catch (e) {
-        return res.status(400).json({ error: e });
+        return sendError(res, e);
     }
 
     try {
         const updatedRecipe = await deleteComment(commentId, recipeId, userId);
         return res.status(200).json(updatedRecipe);
     } catch (e) {
-        return res.status(400).json({ error: e });
+        return sendError(res, e);
     }
 });
 
@@ -155,14 +156,14 @@ router.post('/:id/likes', requireLogin, async function (req, res) {
         recipeId = checkId(req.params.id);
         userId = req.session.user._id;
     } catch (e) {
-        return res.status(400).json({ error: e });
+        return sendError(res, e);
     }
 
     try {
         const updatedRecipe = await likeRecipe(recipeId, userId);
         return res.status(200).json(updatedRecipe);
     } catch (e) {
-        return res.status(400).json({ error: e });
+        return sendError(res, e);
     }
 });
 

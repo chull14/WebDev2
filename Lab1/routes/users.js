@@ -1,6 +1,7 @@
 import { Router } from 'express';
-import { signUp, loginUser } from '../data/users';
-import { checkString, checkUsername, checkPassword } from '../helpers';
+import { signUp, loginUser } from '../data/users.js';
+import { checkString, checkUsername, checkPassword } from '../helpers/validators.js';
+import { sendError } from '../helpers/errors.js';
 
 const router = Router();
 
@@ -18,14 +19,14 @@ router.post('/signup', async function (req, res) {
         username = checkUsername(username);
         password = checkPassword(password);
     } catch (e) {
-        return res.status(400).json({ error: e });
+        return sendError(res, e);
     }
 
     try {
         const newUser = await signUp(name, username, password);
         return res.status(200).json(newUser);
     } catch (e) {
-        return res.status(400).json({ error: e });
+        return sendError(res, e);
     }
 });
 
@@ -42,7 +43,7 @@ router.post('/login', async function (req, res) {
         username = checkUsername(username);
         password = checkPassword(password);
     } catch (e) {
-        return res.status(400).json({ error: e });
+        return sendError(res, e);
     }
 
     try {
@@ -50,7 +51,7 @@ router.post('/login', async function (req, res) {
         req.session.user = { _id: user._id, username: user.username };
         return res.status(200).json(user);
     } catch (e) {
-        return res.status(400).json({ error: e });
+        return sendError(res, e);
     }
 });
 
@@ -60,8 +61,11 @@ router.get('/logout', async function (req, res) {
         return res.status(401).json({ error: 'You are not logged in' });
     }
 
-    req.session.destroy();
-    return res.status(200).json({ message: 'You have been logged out' });
+    req.session.destroy((err) => {
+        if (err) return res.status(500).json({ error: 'Failed to log out' });
+        res.clearCookie('RecipeSesh');
+        return res.status(200).json({ message: 'You have been logged out' });
+    });
 })
 
 export default router;

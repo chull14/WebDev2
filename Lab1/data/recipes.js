@@ -1,5 +1,6 @@
-import { recipes, users } from "../config/mongoCollections";
-import { checkId, checkString, checkTitle, checkSteps, checkCookingSkill, checkIngredients } from "../helpers";
+import { recipes, users } from "../config/mongoCollections.js";
+import { checkId, checkString, checkTitle, checkSteps, checkCookingSkill, checkIngredients } from "../helpers/validators.js";
+import { err } from '../helpers/errors.js';
 import { ObjectId } from "mongodb";
 
 export async function getAllRecipes(page = 1) { // GET
@@ -13,7 +14,7 @@ export async function getAllRecipes(page = 1) { // GET
                 { $limit : 50 }
         ]).toArray();
     
-    if (fiftyRecipes.length === 0) throw `No recipes found on page ${page}`;
+    if (fiftyRecipes.length === 0) throw err(404, `No recipes found on page ${page}`);
     // this should throw a 404 error if recipes aren't found on a page
     
     return fiftyRecipes;
@@ -27,7 +28,7 @@ export async function getRecipeById(id) { // GET
     const recipeCol = await recipes();
     const recipe = await recipeCol.findOne({ _id: new ObjectId(id) });
 
-    if (recipe === null) throw `No recipe found with id: ${id}`;
+    if (!recipe) throw err(404, `Recipe with ID: ${id} not found`);
     // this should throw 404 if no recipe is found
 
     recipe._id = recipe._id.toString();
@@ -35,10 +36,10 @@ export async function getRecipeById(id) { // GET
     return recipe;
 }
 
-export async function createRecipe({ title, ingredients, cookingSkill, steps, userId }) { // POST
+export async function createRecipe({ title, ingredients, cookingSkillRequired, steps, userId }) { // POST
     if (title === undefined) throw 'Must havae a title';
     if (ingredients === undefined) throw 'Must have ingredients';
-    if (cookingSkill === undefined) throw 'Must have cooking skill';
+    if (cookingSkillRequired === undefined) throw 'Must have cooking skill';
     if (steps === undefined) throw 'Must have steps';
     if (userId === undefined) throw 'Must have user ID';
 
@@ -51,7 +52,7 @@ export async function createRecipe({ title, ingredients, cookingSkill, steps, us
     // steps validation
     steps = checkSteps(steps);
     // cookingSkill validation
-    cookingSkill = checkCookingSkill(cookingSkill);
+    cookingSkillRequired = checkCookingSkill(cookingSkillRequired);
 
     // get user that posted
     const userCol = await users();
@@ -60,9 +61,10 @@ export async function createRecipe({ title, ingredients, cookingSkill, steps, us
 
     const recipeCol = await recipes();
     const newRecipe = {
+        _id: new ObjectId(),
         title: title,
         ingredients: ingredients,
-        cookingSkillRequired: cookingSkill,
+        cookingSkillRequired: cookingSkillRequired,
         steps: steps,
         userThatPosted: { _id: userPosted._id, username: userPosted.username },
         comments: [],
@@ -91,10 +93,10 @@ export async function updateRecipe(userId, recipeId, updateObject) { // PATCH
     // retrieve recipe collection and validate existence
     const recipeCol = await recipes();
     const recipeToUpdate = await recipeCol.findOne({ _id: new ObjectId(recipeId) });
-    if (!recipeToUpdate) throw `Recipe with ID: ${recipeId} not found`;
+    if (!recipeToUpdate) throw err(404, `Recipe with ID: ${recipeId} not found`);
 
     // retrieve user collection and cross check users
-    if (userId !== recipeToUpdate.userThatPosted._id.toString()) throw 'Current user cannot update this recipe';
+    if (userId !== recipeToUpdate.userThatPosted._id.toString()) throw err(403, 'You may only update your own recipes');
 
     const updates = {};
 
@@ -153,7 +155,7 @@ export async function createComment(recipeId, userId, comment) { // POST
     // find user posting the comment
     const userCol = await users();
     const currUser = await userCol.findOne({ _id: new ObjectId(userId) });
-    if (!currUser) throw `User with ID: ${userId} not registered`;
+    if (!currUser) throw err(404, `User with ID: ${userId} not found`);
 
     const newComment = {
         _id: new ObjectId(),
@@ -169,7 +171,7 @@ export async function createComment(recipeId, userId, comment) { // POST
         { returnDocument: 'after' }
     );
 
-    if (!recipeWithComment) throw `Recipe with ID: ${recipeId} not found`;
+    if (!recipeWithComment) throw err(404, `Recipe with ID: ${recipeId} not found`);;
     return recipeWithComment;
 }
 
@@ -185,14 +187,14 @@ export async function deleteComment(commentId, recipeId, userId) { // DELETE
     // find recipe
     const recipeCol = await recipes();
     const recipeWithComment = await recipeCol.findOne({ _id: new ObjectId(recipeId) });
-    if (!recipeWithComment) throw `Recipe with ID: ${recipeId} not found`;
+    if (!recipeWithComment) throw err(404, `Recipe with ID: ${recipeId} not found`);
 
     // find comment
     const comment = recipeWithComment.comments.find((c) => c._id.toString() === commentId);
-    if (!comment) throw `Comment with comment ID: ${commentId} not found`;
+    if (!comment) throw err(404, `Comment with ID: ${commentId} not found`);
 
     // cross check user
-    if (comment.userThatPostedComment._id.toString() !== userId) throw 'Current user unable to delete comment';
+    if (comment.userThatPostedComment._id.toString() !== userId) throw err(403, 'You may only delete your own comments');
 
     const updatedRecipe = await recipeCol.findOneAndUpdate(
         { _id: new ObjectId(recipeId) },
@@ -214,7 +216,7 @@ export async function likeRecipe(recipeId, userId) { // POST
     // find recipe
     const recipeCol = await recipes();
     const recipeToLike = await recipeCol.findOne({ _id: new ObjectId(recipeId) });
-    if (!recipeToLike) throw `Recipe with ID: ${recipeId} not found`;
+    if (!recipeToLike) throw err(404, `Recipe with ID: ${recipeId} not found`);
 
     // check for userId in likes
     const exists = recipeToLike.likes.some((l) => l.toString() === userId);

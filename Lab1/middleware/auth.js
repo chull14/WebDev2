@@ -24,3 +24,5 @@ const countRequests = (req, res, next) => {
     console.log(`${key} has been requested ${urlCounts[key]} time(s)`);
     next();
 };
+
+export { requireLogin, logRequests, countRequests };

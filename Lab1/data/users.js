@@ -1,7 +1,8 @@
-import { users } from "../config/mongoCollections";
+import { users } from "../config/mongoCollections.js";
 import { ObjectId } from "mongodb";
 import bcrypt from 'bcryptjs';
-import { checkString, checkUsername, checkPassword } from "../helpers";
+import { checkString, checkUsername, checkPassword } from "../helpers/validators.js";
+import { err } from '../helpers/errors.js';
 
 export async function signUp(name, username, password) { // POST (basically createUser)
     if (name === undefined) throw 'Must supply a name';
@@ -43,7 +44,7 @@ export async function loginUser(username, password) { // POST
 
     const userCol = await users();
     const userLoggedIn = await userCol.findOne({ username: username });
-    if (!user) throw `User with username ${username} not found`;
+    if (!userLoggedIn) throw err(404, `User with username ${username} not found`);
 
     const match = await bcrypt.compare(password, userLoggedIn.password);
     if (!match) throw 'Icorrect password';
