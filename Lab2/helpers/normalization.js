@@ -4,8 +4,7 @@ DATA SUMMARY CONSTRUCTION
 */
 
 export function checkField(field) {
-    if (!field) return null;
-    if (typeof field !== "string") throw 'Field must be a string';
+    if (typeof field !== "string") return null;
 
     field = field.trim();
     if (field === "" || field === "N/A") return null;
@@ -13,14 +12,14 @@ export function checkField(field) {
     return field;
 }
 
-export function checkImdbId(expectedId, imdbId) {
-    if (!imdbId) throw 'ImdbID must be available';
-    if (typeof imdbId !== 'string') throw 'imdbID must be a string';
+export function checkImdbId(expectedId, requestedId) {
+    if (!requestedId) throw 'ImdbID must be available';
+    if (typeof requestedId !== 'string') throw 'imdbID must be a string';
 
-    if (!/^tt[0-9]{7,10}$/.test(imdbId)) throw 'Invalid ImdbID';
-    if (imdbId !== expectedId) throw 'Requested ID does not match actual ID';
+    if (!/^tt[0-9]{7,10}$/.test(requestedId)) throw 'Invalid ImdbID';
+    if (requestedId !== expectedId) throw 'Requested ID does not match actual ID';
 
-    return imdbId;
+    return requestedId;
 }
 
 export function checkTitle(title) {
@@ -39,6 +38,12 @@ export function checkType(type) {
     return type;
 }
 
+export function checkYearPlotRated(value) {
+    value = checkField(value);
+    if (!value) return null;
+    return value;
+}
+
 export function deconstructFieldArray(fieldArray) {
     fieldArray = checkField(fieldArray);
     if (!fieldArray) return [];
@@ -55,14 +60,10 @@ export function checkRuntime(runtime) {
     runtime = checkField(runtime);
     if (runtime === null) return null;
 
-    const splitRuntime = runtime.split(' ');
+    const match = /^(\d+)\s+min$/.exec(runtime);
+    if (!match) return null;
 
-    if (splitRuntime.length !== 2) throw 'Invalid runtime format';
-
-    const [time, unit] = splitRuntime;
-    if (unit !== 'min' || !/^\d+$/.test(time)) return null;
-
-    const num = Number(time);
+    const num = Number(match[1]);
     return Number.isSafeInteger(num) ? num : null;
 }
 
@@ -97,7 +98,7 @@ export function checkBox(value) {
     value = checkField(value);
     if (value === null) return null;
 
-    if (!/^\$?(\d+|\d{1,3}(,\d{3})+)$/.test(s)) return null;
+    if (!/^\$?(\d+|\d{1,3}(,\d{3})+)$/.test(value)) return null;
     const num = Number(value.replace(/[$,]/g, ''));
     return Number.isSafeInteger(num) && num >= 0 ? num : null;
 }
@@ -108,8 +109,15 @@ export function checkPoster(url) {
 
     try {
         const newUrl = new URL(url);
-        return newUrl.protocol === 'http:' || url.protocol === 'https:' ? url : null;
+        return newUrl.protocol === 'http:' || newUrl.protocol === 'https:' ? url : null;
     } catch {
         return null;
     }
 }
+
+export function checkSeriesId(id) {
+    id = checkField(id);
+    if (!id) return null;
+    return /^tt[0-9]{7,10}$/.test(id) ? id : null;
+}
+
