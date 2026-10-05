@@ -1,4 +1,4 @@
 export const mongoConfig = {
   serverUrl: 'mongodb://localhost:27017/',
-  database: 'graphql-Lab3'
+  database: 'Hull-Connor-CS554-Lab3-graphql'
 };

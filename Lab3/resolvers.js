@@ -6,4 +6,5 @@ import {
   participants as participantCollection
 } from './config/mongoCollections.js';
 
-
+export const resolvers = {
+};
