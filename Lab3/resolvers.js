@@ -24,6 +24,10 @@ import {
 } from './helpers/validation.js';
 import { parseDate } from './helpers/helpers.js';
 
+/*
+-----------------------------------------------------
+*/
+
 const instructorValidators = {
   first_name: checkString,
   last_name: checkString,
@@ -54,8 +58,12 @@ const participantValidators = {
   membership_level: validateMember,
 };
 
+/* RESOLVERS */ 
 export const resolvers = {
-  // QUERIES
+
+// *************************************
+// *************** QUERY *************** 
+// *************************************
   Query: {
     instructors: async () => {
       const instructors = await instructorCollection();
@@ -75,7 +83,9 @@ export const resolvers = {
 
       return allParticipants;
     },
-
+/*
+----------------------------------------------------------------------------------------------------------
+*/
     getInstructorById: async (_, args) => {
       // validate fields
       const _id = validateId(args._id, '_id');
@@ -109,18 +119,9 @@ export const resolvers = {
       }
       return participant;
     },
-
-    getInstructorsByStudio: async (_, args) => {
-      // valdate studio
-      const studio = checkString(args.studio, 'studio');
-
-      const instructors = await instructorCollection();
-      const instructorsInStudio = await instructors
-        .find({ studio_name: studio }, { collation: { locale: 'en', strength: 2 } })
-        .toArray();
-
-      return instructorsInStudio;
-    },
+/*
+----------------------------------------------------------------------------------------------------------
+*/
     getWorkshopsByInstructorId: async (_, args) => {
       // validate fields
       const _id = validateId(args.instructorId, 'instructorId');
@@ -136,6 +137,40 @@ export const resolvers = {
         .toArray();
 
       return workshopsInstructor;
+    },
+    getParticipantsByWorkshopId: async (_, args) => {
+      const valWrk = validateId(args.workshopId, 'workshopId');
+      const workshopId = new ObjectId(valWrk);
+      // check workshop
+      const workshops = await workshopCollection();
+      const workshopExist = await workshops.findOne({ _id: workshopId });
+      if (!workshopExist) throw notFound(`Workshop with id ${valWrk} not found`);
+
+      // participants
+      const participants = await participantCollection();
+      const allParticipants = await participants.find({}).toArray();
+
+      const participantsInWorkshop = allParticipants.filter(
+        (pt) => pt.registered_workshops.some(
+          (id) => id.equals(workshopId)
+        )
+      );
+
+      return participantsInWorkshop;
+    },
+/*
+----------------------------------------------------------------------------------------------------------
+*/
+    getInstructorsByStudio: async (_, args) => {
+      // valdate studio
+      const studio = checkString(args.studio, 'studio');
+
+      const instructors = await instructorCollection();
+      const instructorsInStudio = await instructors
+        .find({ studio_name: studio }, { collation: { locale: 'en', strength: 2 } })
+        .toArray();
+
+      return instructorsInStudio;
     },
     getWorkshopsByCategory: async (_, args) => {
       // valdate category
@@ -158,7 +193,9 @@ export const resolvers = {
       
       return participantMembers;
     },
-
+/*
+----------------------------------------------------------------------------------------------------------
+*/
     getInstructorsJoinedBetween: async (_, args) => {
       // validate dates
       const { start, end } = validateDateRange(args.start, args.end);
@@ -168,10 +205,12 @@ export const resolvers = {
       const instructors = await instructorCollection();
       const allInstructors = await instructors.find({}).toArray();
 
-      return allInstructors.filter((instructor) => {
+      const instructorsJoined = allInstructors.filter((instructor) => {
         const joinedDate = parseDate(instructor.date_joined);
         return joinedDate >= parsedStart && joinedDate <= parsedEnd;
       });
+
+      return instructorsJoined;
     },
     getWorkshopsByRegistrationRange: async (_, args) => {
       // validate dates
@@ -182,13 +221,17 @@ export const resolvers = {
       const workshops = await workshopCollection();
       const allWorkshops = await workshops.find({}).toArray();
 
-      return allWorkshops.filter((workshop) => {
+      const workshopsReg = allWorkshops.filter((workshop) => {
         const open = parseDate(workshop.registration_open);
         const close = parseDate(workshop.registration_close);
         return open >= parsedStart && close <= parsedEnd;
       });
-    },
 
+      return workshopsReg;
+    },
+/*
+----------------------------------------------------------------------------------------------------------
+*/
     searchParticipantsByLastName: async (_, args) => {
       const term = checkString(args.searchTerm, 'searchTerm').toLowerCase();
 
@@ -203,7 +246,9 @@ export const resolvers = {
     }
   },
 
-  // MUTATIONS 
+// *****************************************
+// *************** MUTATIONS ***************
+// *****************************************
   Mutation: {
     addInstructor: async (_, args) => {
       // validate fields
@@ -270,7 +315,9 @@ export const resolvers = {
       }
       return newParticipant;
     },
-    
+/*
+----------------------------------------------------------------------------------------------------------
+*/
     editInstructor: async (_, args) => {
       // validate ID
       const _id = validateId(args._id, '_id');
@@ -351,6 +398,88 @@ export const resolvers = {
 
       if (!newParticipant) throw notFound(`No participant found with _id ${_id}`);
       return newParticipant;
+    },
+/*
+----------------------------------------------------------------------------------------------------------
+*/
+    registerForWorkshop: async (_, args) => {
+      const valPart = validateId(args.participantId, 'participantId');
+      const valWrk= validateId(args.workshopId, 'workshopId');
+      const participantId = new ObjectId(valPart);
+      const workshopId = new ObjectId(valWrk);
+
+      // check participant
+      const participants = await participantCollection();
+      const participantExist = await participants.findOne({ _id: participantId });
+      if (!participantExist) throw notFound(`Participant with id ${valPart} not found`);
+      // check workshop
+      const workshops = await workshopCollection();
+      const workshopExist = await workshops.findOne({ _id: workshopId });
+      if (!workshopExist) throw notFound(`Workshop with id ${valWrk} not found`);
+
+      // dup check
+      if (participantExist.registered_workshops.some(
+        (id) => id.equals(workshopId)
+      )) return participantExist;
+
+      // register in array
+      const updatedParticipant = await participants.findOneAndUpdate(
+        { _id: participantId },
+        { $push: { registered_workshops: workshopId } },
+        { returnDocument: 'after' }
+      );
+
+      return updatedParticipant;
+    },
+    unregisterFromWorkshop: async (_, args) => {
+      const valPart = validateId(args.participantId, 'participantId');
+      const valWrk= validateId(args.workshopId, 'workshopId');
+      const participantId = new ObjectId(valPart);
+      const workshopId = new ObjectId(valWrk);
+
+      // check participant
+      const participants = await participantCollection();
+      const participantExist = await participants.findOne({ _id: participantId });
+      if (!participantExist) throw notFound(`Participant with id ${valPart} not found`);
+      // check workshop
+      const workshops = await workshopCollection();
+      const workshopExist = await workshops.findOne({ _id: workshopId });
+      if (!workshopExist) throw notFound(`Workshop with id ${valWrk} not found`);
+
+      // unregister from array
+      const updatedParticipant = await participants.findOneAndUpdate(
+        { _id: participantId },
+        { $pull: { registered_workshops: workshopId } },
+        { returnDocument: 'after' }
+      );
+
+      return updatedParticipant;
+    },
+/*
+----------------------------------------------------------------------------------------------------------
+*/
+    reassignWorkshopInstructor: async (_, args) => {
+      const valWrk= validateId(args.workshopId, 'workshopId');
+      const valInst = validateId(args.instructorId, 'instructorId');
+      const instructorId = new ObjectId(valInst);
+      const workshopId = new ObjectId(valWrk);
+
+      // check instructor
+      const instructors = await instructorCollection();
+      const instructorExist = await instructors.findOne({ _id: instructorId });
+      if (!instructorExist) throw notFound(`Instructor with id ${valInst} not found`);
+      // check workshop
+      const workshops = await workshopCollection();
+      const workshopExist = await workshops.findOne({ _id: workshopId });
+      if (!workshopExist) throw notFound(`Workshop with id ${valWrk} not found`);
+
+      const updatedWorkshop = await workshops.findOneAndUpdate(
+        { _id: workshopId},
+        { $set: { instructor: instructorId } },
+        { returnDocument: 'after' }
+      );
+
+      return updatedWorkshop;
     }
   }
 };
