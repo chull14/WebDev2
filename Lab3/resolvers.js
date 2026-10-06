@@ -1,11 +1,14 @@
 import {GraphQLError} from 'graphql';
+import { ObjectId } from 'mongodb';
+
+import { parseDate } from './helpers/helpers.js';
 
 import {
   instructors as instructorCollection,
   workshops as workshopCollection,
   participants as participantCollection
 } from './config/mongoCollections.js';
-import { ObjectId } from 'mongodb';
+
 import { 
   badInput,
   checkString, 
@@ -22,7 +25,6 @@ import {
   validatePhone, 
   validateWorkshopDates
 } from './helpers/validation.js';
-import { parseDate } from './helpers/helpers.js';
 
 /*
 -----------------------------------------------------
@@ -459,7 +461,7 @@ export const resolvers = {
 ----------------------------------------------------------------------------------------------------------
 */
     reassignWorkshopInstructor: async (_, args) => {
-      const valWrk= validateId(args.workshopId, 'workshopId');
+      const valWrk = validateId(args.workshopId, 'workshopId');
       const valInst = validateId(args.instructorId, 'instructorId');
       const instructorId = new ObjectId(valInst);
       const workshopId = new ObjectId(valWrk);
@@ -480,6 +482,130 @@ export const resolvers = {
       );
 
       return updatedWorkshop;
+    },
+/*
+----------------------------------------------------------------------------------------------------------
+*/
+    removeInstructor: async (_, args) => {
+      // validate ID
+      const valId = validateId(args._id, '_id');
+      const instructorId = new ObjectId(valId);
+
+      const instructors = await instructorCollection();
+      const deletedInstructor = await instructors.findOneAndDelete(
+        { _id: instructorId }
+      );
+
+      if (!deletedInstructor) {
+        throw notFound(`Could not delete instructor with id ${instructorId}`);
+      }
+
+      const workshops = await workshopCollection();
+      await workshops.updateMany(
+        { instructor: instructorId },
+        { $set: { instructor: null } }
+      );
+
+      return deletedInstructor;
+    },
+    removeWorkshop: async (_, args) => {
+      // validate ID
+      const valId = validateId(args._id, '_id');
+      const workshopId = new ObjectId(valId);
+
+      const workshops = await workshopCollection();
+      const deletedWorkshop = await workshops.findOneAndDelete(
+        { _id: workshopId }
+      );
+
+      if (!deletedWorkshop) {
+        throw notFound(`Could not delete workshop with id ${workshopId}`);
+      }
+
+      const participants = await participantCollection();
+      await participants.updateMany(
+        { registered_workshops: workshopId },
+        { $pull: { registered_workshops: workshopId } }
+      );
+      
+      return deletedWorkshop;
+    },
+    removeParticipant: async (_, args) => {
+      // validate ID
+      const valId = validateId(args._id, '_id');
+      const participantId = new ObjectId(valId);
+
+      const participants = await participantCollection();
+      const deletedParticipant = await participants.findOneAndDelete(
+        { _id: participantId }
+      );
+
+      if (!deletedParticipant) {
+        throw notFound(`Could not delete participant with id ${participantId}`);
+      }
+      
+      return deletedParticipant;
+    }
+  },
+
+// *****************************************
+// *************** TYPES ***************
+// *****************************************
+
+  Instructor: {
+    workshops: async (parentValue) => {
+      const workshops = await workshopCollection();
+      const instructsWorkshops = await workshops
+        .find({ instructor: parentValue._id })
+        .toArray();
+      return instructsWorkshops;
+    },
+    numOfWorkshops: async (parentValue) => {
+      const workshops = await workshopCollection();
+      const numOfWorkshops = await workshops.countDocuments({
+        instructor: parentValue._id
+      });
+      return numOfWorkshops;
+    }
+  },
+  Workshop: {
+    instructor: async (parentValue) => {
+      if (!parentValue.instructor) return null;
+       const instructors = await instructorCollection();
+       const workshopInstructor = await instructors.findOne({
+        _id: parentValue.instructor
+       });
+       return workshopInstructor;
+    },
+    registeredParticipants: async (parentValue) => {
+      const participants = await participantCollection();
+      const allParticipants = await participants.find({}).toArray();
+
+      const participantsInWorkshop = allParticipants.filter(
+        (pt) => pt.registered_workshops.some(
+          (id) => id.equals(parentValue._id)
+        )
+      )
+      return participantsInWorkshop;
+    },
+    numOfRegisteredParticipants: async (parentValue) => {
+      const participants = await participantCollection();
+      const registeredParticipants = await participants.countDocuments(
+        { registered_workshops: parentValue._id }
+      );
+      return registeredParticipants;
+    }
+  },
+  Participant: {
+    registered_workshops: async (parentValue) => {
+      const workshops = await workshopCollection();
+      const registeredWorkshops = await workshops.find(
+        { _id: { $in: parentValue.registered_workshops } }
+      ).toArray();
+      return registeredWorkshops;
+    },
+    numOfRegisteredWorkshops: (parentValue) => {
+      return parentValue.registered_workshops.length
     }
   }
 };
