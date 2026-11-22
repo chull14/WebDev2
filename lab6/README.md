@@ -1,16 +1,18 @@
-# React + Vite
+# Name: Connor Hull
+# Art Institute Explorer (CS-554 Lab 5)
+A React app for browsing artworks, agents, and exhibitions from the Art Institute of Chicago API.
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## How to Run
 
-Currently, two official plugins are available:
+```bash
+npm install
+npm run dev
+```
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Extra Credit: Search
 
-## React Compiler
+Each list page has a search bar that filters the 50 results on the current page as you type:
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+- Artworks: by title or artist
+- Agents: by name
+- Exhibitions: by title, gallery, or status

@@ -1,4 +1,5 @@
 
+
 export function validatePage(page) {
     if (!/^\d+$/.test(page)) return null;
     const pageNum = Number(page);
@@ -7,9 +8,9 @@ export function validatePage(page) {
     return pageNum;
 };
 
-export function getImage(iiifUrl, imageId) {
+export function getImage(iiifUrl, imageId, width=400) {
     if (!iiifUrl || !imageId) return null;
-    return `${iiifUrl}/${imageId}/full/400,/0/default.jpg`;
+    return `${new URL(iiifUrl).pathname}/${imageId}/full/${width},/0/default.jpg`;
 };
 
 export function checkValue(value) { 
@@ -36,10 +37,15 @@ export function formatDate(date) {
     const valDate = new Date(date);
     if (isNaN(valDate.getTime())) return null;
 
-    return date.toLocaleDateString('en-US', {
+    return valDate.toLocaleDateString('en-US', {
         year: 'numeric',
         month: 'long',
         day: 'numeric',
         timeZone: 'America/Chicago'
     });
+}
+
+export function stripHtml(html) {
+    if (!checkValue(html)) return null;
+    return html.replace(/<[^>]*>/g, '').trim();
 }

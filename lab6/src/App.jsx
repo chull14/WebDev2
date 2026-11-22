@@ -14,21 +14,18 @@ function App() {
   return (
     <div className='App'>
       <header className='App-header'>
-        <Header /> 
+        <Header />
       </header>
+      
       <main>
         <Routes>
           <Route path='/' element={<Home />} />
-
           <Route path='/artworks/page/:page' element={<ArtworkList />} />
           <Route path='/artworks/:id' element={<ArtworkDetail />} />
-
           <Route path='/agents/page/:page' element={<AgentList />} />
           <Route path='/agents/:id' element={<AgentDetail />} />
-
           <Route path='/exhibitions/page/:page' element={<ExhibitionList />} />
           <Route path='/exhibitions/:id' element={<ExhibitionDetail />} />
-
           <Route path='*' element={<NotFound />} />
         </Routes>
       </main>
