@@ -1,0 +1,145 @@
+
+/* page */
+ 
+body {
+  margin: 0;
+  font-family: system-ui, sans-serif;
+  color: #222;
+  background: #f5f6f8;
+}
+ 
+/* all pages after nav */
+#root > :not(nav) {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 1rem 1.5rem;
+}
+ 
+h1 {
+  margin-top: 0.5rem;
+}
+ 
+a {
+  color: #2457a6;
+}
+ 
+/* nav bar */
+ 
+nav {
+  display: flex;
+  gap: 1.5rem;
+  padding: 1rem 1.5rem;
+  background: #2457a6;
+}
+ 
+nav a {
+  color: white;
+  text-decoration: none;
+  font-weight: 600;
+}
+ 
+nav a.active {
+  text-decoration: underline;
+}
+ 
+/* buttons */
+ 
+button {
+  padding: 0.4rem 0.8rem;
+  margin: 0.25rem 0.25rem 0.25rem 0;
+  border: 1px solid #2457a6;
+  border-radius: 4px;
+  background: white;
+  color: #2457a6;
+  cursor: pointer;
+}
+ 
+button:hover {
+  background: #e8eef8;
+}
+ 
+button[type='submit'] {
+  background: #2457a6;
+  color: white;
+}
+ 
+button:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+ 
+/* form + filters */
+ 
+form {
+  margin: 0.5rem 0;
+}
+ 
+input,
+select {
+  padding: 0.35rem;
+  border: 1px solid #bbb;
+  border-radius: 4px;
+  font: inherit;
+}
+ 
+/* tables */
+ 
+table {
+  width: 100%;
+  margin-top: 1rem;
+  border-collapse: collapse;
+  background: white;
+}
+ 
+th,
+td {
+  padding: 0.6rem;
+  border-bottom: 1px solid #ddd;
+  text-align: left;
+}
+ 
+th {
+  background: #eef1f5;
+}
+ 
+/* modal */
+ 
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+ 
+.modal {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 8px;
+  width: 400px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+ 
+.modal h2 {
+  margin-top: 0;
+}
+ 
+.modal label {
+  display: block;
+  margin-bottom: 0.75rem;
+}
+ 
+.modal input,
+.modal select {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  margin-top: 0.25rem;
+}
+ 
+/* errors */
+.error {
+  color: #c00;
+}

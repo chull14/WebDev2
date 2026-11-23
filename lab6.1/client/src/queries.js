@@ -44,7 +44,7 @@ const PARTICIPANT_FIELDS = gql`
         first_name
         last_name
         email
-        dat_of_birth
+        date_of_birth
         membership_level
         numOfRegisteredWorkshops
     }
@@ -102,7 +102,7 @@ export const GET_PARTICIPANT_BY_ID = gql`
     query GetParticipantById($id: String!) {
         getParticipantById(_id: $id) {
             ...ParticipantFields
-            registeredWorkshops { ...WorkshopFields }
+            registered_workshops { ...WorkshopFields }
         }
     }
     ${PARTICIPANT_FIELDS}
@@ -123,7 +123,7 @@ export const GET_WORKSHOPS_BY_INSTRUCTOR_ID = gql`
 
 export const GET_PARTICIPANTS_BY_WORKSHOP_ID = gql`
     query GetParticipantsByWorkshopId($workshopId: String!) {
-        getParticipantsByWoprkshopId(workshopId: $workshopId) {
+        getParticipantsByWorkshopId(workshopId: $workshopId) {
             ...ParticipantFields
         }
     }

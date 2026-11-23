@@ -105,8 +105,8 @@ export function validateDuration(duration) {
 
 
 export function validateDateRange(start, end) {
-    start = start;
-    end = end;
+    start = start || '01/01/1900';
+    end = end || getToday();
 
     start = validateDate(start, 'Start date');
     end = validateDate(end, 'End date');
@@ -143,6 +143,6 @@ export function validateChanges(original, values) {
     }
 
     if (Object.keys(changes).length === 0) throw new Error('You must change at least one field.');
-    
+
     return changes;
 };
