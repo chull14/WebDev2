@@ -15,6 +15,7 @@ const INSTRUCTOR_FIELDS = gql`
     }
 `;
 
+
 const WORKSHOP_FIELDS = gql`
     fragment WorkshopFields on Workshop {
         _id
@@ -64,12 +65,15 @@ export const GET_WORKSHOPS = gql`
     ${WORKSHOP_FIELDS}
 `;
 
+
 export const GET_PARTICIPANTS = gql`
     query GetParticipants {
         participants { ...ParticipantFields }
     }
     ${PARTICIPANT_FIELDS}
 `;
+
+
 
 // GET by id queries
 export const GET_INSTRUCTOR_BY_ID = gql`
@@ -105,6 +109,8 @@ export const GET_PARTICIPANT_BY_ID = gql`
     ${WORKSHOP_FIELDS}
 `;
 
+
+
 // GET relational queries
 export const GET_WORKSHOPS_BY_INSTRUCTOR_ID = gql`
     query GetWorkshopByInstructorId($instructorId: String!) {
@@ -123,6 +129,7 @@ export const GET_PARTICIPANTS_BY_WORKSHOP_ID = gql`
     }
     ${PARTICIPANT_FIELDS}
 `;
+
 
 // GET with filtering queries
 export const GET_INSTRUCTORS_BY_STUDIO = gql`
@@ -170,6 +177,7 @@ export const GET_PARTICIPANTS_BY_MEMBERSHIP = gql`
   ${PARTICIPANT_FIELDS}
 `;
 
+
 export const SEARCH_PARTICIPANTS_BY_LAST_NAME = gql`
   query SearchParticipantsByLastName($searchTerm: String!) {
     searchParticipantsByLastName(searchTerm: $searchTerm) { 
@@ -178,6 +186,8 @@ export const SEARCH_PARTICIPANTS_BY_LAST_NAME = gql`
   }
   ${PARTICIPANT_FIELDS}
 `;
+
+
 
 // ADD INSTRUCTOR MUTATION
 export const ADD_INSTRUCTOR = gql`
@@ -202,6 +212,8 @@ export const ADD_INSTRUCTOR = gql`
     }
     ${INSTRUCTOR_FIELDS}
 `;
+
+
 
 // PATCH INSTRUCTOR MUTATION
 export const EDIT_INSTRUCTOR = gql`
@@ -229,6 +241,8 @@ export const EDIT_INSTRUCTOR = gql`
   ${INSTRUCTOR_FIELDS}
 `;
 
+
+
 // REMOVE INSTRUCTOR MUTATION
 export const REMOVE_INSTRUCTOR = gql`
   mutation RemoveInstructor($_id: String!) {
@@ -239,6 +253,8 @@ export const REMOVE_INSTRUCTOR = gql`
     }
   }
 `;
+
+
 
 // ADD WORKSHOP MUTATION
 export const ADD_WORKSHOP = gql`

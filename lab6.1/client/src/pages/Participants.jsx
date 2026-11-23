@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery, useMutation } from '@apollo/client/react';
 import ParticipantForm from '../components/ParticipantForm.jsx';
+
 import {
   GET_PARTICIPANTS,
   GET_PARTICIPANTS_BY_MEMBERSHIP,
@@ -11,7 +12,6 @@ import {
 import { checkString } from '../helpers.js';
 
 function Participants() {
-  // The applied filter: null (show all), { level }, or { searchTerm }
   const [filter, setFilter] = useState(null);
   const [level, setLevel] = useState('');
   const [lastName, setLastName] = useState('');
@@ -19,7 +19,6 @@ function Participants() {
   const [showAdd, setShowAdd] = useState(false);
   const [editing, setEditing] = useState(null);
 
-  // Each filter query only runs while its filter is applied
   const all = useQuery(GET_PARTICIPANTS);
   const byLevel = useQuery(GET_PARTICIPANTS_BY_MEMBERSHIP, { variables: filter, skip: !filter?.level });
   const byName = useQuery(SEARCH_PARTICIPANTS_BY_LAST_NAME, { variables: filter, skip: !filter?.searchTerm });
@@ -27,9 +26,8 @@ function Participants() {
     refetchQueries: 'active',
     awaitRefetchQueries: true
   });
-
   const result = filter?.level ? byLevel : filter?.searchTerm ? byName : all;
-  // Each query returns one list, e.g. data.participants or data.getParticipantsByMembership
+
   const participants = result.data && Object.values(result.data)[0];
 
   function filterByLevel(e) {
@@ -57,7 +55,7 @@ function Participants() {
     setLevel('');
     setLastName('');
     setError('');
-  }
+  };
 
   async function handleDelete(participant) {
     if (!window.confirm(`Delete ${participant.first_name} ${participant.last_name}?`)) return;
@@ -66,7 +64,7 @@ function Participants() {
     } catch (err) {
       setError(err.message);
     }
-  }
+  };
 
   return (
     <div>
@@ -105,10 +103,12 @@ function Participants() {
                   <td>{p.email}</td>
                   <td>{p.membership_level}</td>
                   <td>{p.numOfRegisteredWorkshops}</td>
+
                   <td>
                     <button onClick={() => setEditing(p)}>Edit</button>
                     <button onClick={() => handleDelete(p)}>Delete</button>
                   </td>
+                  
                 </tr>
               ))}
             </tbody>

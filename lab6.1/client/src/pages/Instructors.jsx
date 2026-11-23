@@ -2,20 +2,25 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery, useMutation } from '@apollo/client/react';
 import InstructorForm from '../components/InstructorForm.jsx';
+
 import {
   GET_INSTRUCTORS,
   GET_INSTRUCTORS_BY_STUDIO,
   GET_INSTRUCTORS_JOINED_BETWEEN,
   REMOVE_INSTRUCTOR
 } from '../queries.js';
+
 import { checkString, validateDateRange, toMMDDYYYY, toInputDate } from '../helpers.js';
 
 function Instructors() {
   const [filter, setFilter] = useState(null);
   const [studio, setStudio] = useState('');
+
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
+
   const [error, setError] = useState('');
+
   const [showAdd, setShowAdd] = useState(false);
   const [editing, setEditing] = useState(null);
 
@@ -23,6 +28,7 @@ function Instructors() {
   const all = useQuery(GET_INSTRUCTORS);
   const byStudio = useQuery(GET_INSTRUCTORS_BY_STUDIO, { variables: filter, skip: !filter?.studio });
   const byDate = useQuery(GET_INSTRUCTORS_JOINED_BETWEEN, { variables: filter, skip: !filter?.start });
+
   const [removeInstructor] = useMutation(REMOVE_INSTRUCTOR, {
     refetchQueries: 'active',
     awaitRefetchQueries: true
@@ -49,7 +55,8 @@ function Instructors() {
     } catch (err) {
       setError(err.message);
     }
-  }
+  };
+
 
   function clearFilters() {
     setFilter(null);
@@ -78,14 +85,17 @@ function Instructors() {
         <button type="submit">Filter by Studio</button>
       </form>
       <form onSubmit={filterByDate}>
+
         <label>Joined from{' '}
           <input type="date" value={toInputDate(startDate)}
             onChange={(e) => setStartDate(toMMDDYYYY(e.target.value))} />
         </label>
+
         <label> to{' '}
           <input type="date" value={toInputDate(endDate)}
             onChange={(e) => setEndDate(toMMDDYYYY(e.target.value))} />
         </label>
+
         <button type="submit">Filter by Date Joined</button>
       </form>
       <button onClick={clearFilters}>Clear Filters</button>
@@ -99,6 +109,7 @@ function Instructors() {
               <thead>
                 <tr><th>Name</th><th>Specialty</th><th>Studio</th><th>Workshops Taught</th><th></th></tr>
               </thead>
+
               <tbody>
                 {instructors.map((i) => (
                   <tr key={i._id}>
@@ -113,6 +124,7 @@ function Instructors() {
                   </tr>
                 ))}
               </tbody>
+
             </table>
           )
       }

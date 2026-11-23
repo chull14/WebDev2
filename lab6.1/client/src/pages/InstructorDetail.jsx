@@ -14,6 +14,7 @@ function InstructorDetail() {
   const [showEdit, setShowEdit] = useState(false);
   const [error, setError] = useState('');
 
+
   const { data, loading, error: loadError } = useQuery(GET_INSTRUCTOR_BY_ID, { variables: { id } });
   const instructor = data?.getInstructorById;
 
@@ -23,7 +24,6 @@ function InstructorDetail() {
     skip: !instructor
   });
   const schedule = workshopData?.getWorkshopsByInstructorId ?? [];
-
   const [removeInstructor] = useMutation(REMOVE_INSTRUCTOR);
 
   async function handleDelete() {
@@ -84,6 +84,7 @@ function InstructorDetail() {
       )}
 
       {showEdit && <InstructorForm instructor={instructor} onClose={() => setShowEdit(false)} />}
+        
     </div>
   );
 }

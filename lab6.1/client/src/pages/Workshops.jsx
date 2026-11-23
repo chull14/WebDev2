@@ -39,7 +39,7 @@ function Workshops() {
     } catch (err) {
       setError(err.message);
     }
-  }
+  };
 
   function filterByRange(e) {
     e.preventDefault();
@@ -49,7 +49,7 @@ function Workshops() {
     } catch (err) {
       setError(err.message);
     }
-  }
+  };
 
   function clearFilters() {
     setFilter(null);
@@ -57,7 +57,7 @@ function Workshops() {
     setStartDate('');
     setEndDate('');
     setError('');
-  }
+  };
 
   async function handleDelete(workshop) {
     if (!window.confirm(`Delete ${workshop.title}?`)) return;
@@ -66,7 +66,7 @@ function Workshops() {
     } catch (err) {
       setError(err.message);
     }
-  }
+  };
 
   return (
     <div>
@@ -78,14 +78,17 @@ function Workshops() {
         <button type="submit">Filter by Category</button>
       </form>
       <form onSubmit={filterByRange}>
+
         <label>Registration from{' '}
           <input type="date" value={toInputDate(startDate)}
             onChange={(e) => setStartDate(toMMDDYYYY(e.target.value))} />
         </label>
+
         <label> to{' '}
           <input type="date" value={toInputDate(endDate)}
             onChange={(e) => setEndDate(toMMDDYYYY(e.target.value))} />
         </label>
+
         <button type="submit">Filter by Registration Dates</button>
       </form>
       <button onClick={clearFilters}>Clear Filters</button>
@@ -102,6 +105,7 @@ function Workshops() {
                   <th>Instructor</th><th>Registered Participants</th><th></th>
                 </tr>
               </thead>
+
               <tbody>
                 {workshops.map((w) => (
                   <tr key={w._id}>
@@ -120,6 +124,7 @@ function Workshops() {
                   </tr>
                 ))}
               </tbody>
+
             </table>
           )
         }

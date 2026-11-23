@@ -3,11 +3,13 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useQuery, useMutation } from '@apollo/client/react';
 import WorkshopForm from '../components/WorkshopForm.jsx';
 import ReassignInstructorForm from '../components/ReassignInstructorForm.jsx';
+
 import {
   GET_WORKSHOP_BY_ID,
   GET_PARTICIPANTS_BY_WORKSHOP_ID,
   REMOVE_WORKSHOP
 } from '../queries.js';
+
  
 function WorkshopDetail() {
   const { id } = useParams();
@@ -25,11 +27,11 @@ function WorkshopDetail() {
     skip: !workshop
   });
   const roster = participantData?.getParticipantsByWorkshopId ?? [];
- 
   const [removeWorkshop] = useMutation(REMOVE_WORKSHOP);
  
   async function handleDelete() {
     if (!window.confirm(`Delete ${workshop.title}?`)) return;
+
     try {
       await removeWorkshop({ variables: { _id: id } });
       navigate('/workshops');
@@ -85,6 +87,7 @@ function WorkshopDetail() {
           <thead>
             <tr><th>Name</th><th>Email</th><th>Membership</th></tr>
           </thead>
+
           <tbody>
             {roster.map((p) => (
               <tr key={p._id}>
@@ -94,6 +97,7 @@ function WorkshopDetail() {
               </tr>
             ))}
           </tbody>
+
         </table>
       )}
  

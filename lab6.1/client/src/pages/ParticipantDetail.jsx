@@ -8,6 +8,7 @@ import { GET_PARTICIPANT_BY_ID, REMOVE_PARTICIPANT } from '../queries.js';
 function ParticipantDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
+
   const [showEdit, setShowEdit] = useState(false);
   const [registrationMode, setRegistrationMode] = useState(null); 
   const [error, setError] = useState('');
@@ -25,7 +26,7 @@ function ParticipantDetail() {
     } catch (err) {
       setError(err.message);
     }
-  }
+  };
 
   if (loading && !data) return <p>Loading participant...</p>;
   if (loadError) return <p className="error">{loadError.message}</p>;
@@ -50,6 +51,7 @@ function ParticipantDetail() {
           <thead>
             <tr><th>Title</th><th>Category</th><th>Location</th><th>Start</th><th>End</th></tr>
           </thead>
+
           <tbody>
             {participant.registered_workshops.map((w) => (
               <tr key={w._id}>
@@ -61,6 +63,7 @@ function ParticipantDetail() {
               </tr>
             ))}
           </tbody>
+          
         </table>
       )}
 

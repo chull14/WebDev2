@@ -6,16 +6,19 @@ export function parseDate(date) {
     return new Date(year, month - 1, day);
 }
 
+
 // MM/DD/YYYY format
 export function toMMDDYYYY(inputValue) {
     if (!inputValue) return '';
+
     const [year, month, day] = inputValue.split('-');
     return `${month}/${day}/${year}`;
-}
+};
 
 // input date format
 export function toInputDate(date) {
     if (!date) return '';
+
     const [month, day, year] = date.split('/');
     return `${year}-${month}-${day}`;
 }
@@ -40,21 +43,25 @@ export function checkString(string, fieldName) {
 
 export function validateEmail(email, fieldName) {
     email = checkString(email, fieldName);
+
     if (!validator.isEmail(email)) throw new Error('Please enter a valid email address.');
     return email;
 };
 
 export function validatePhone(phone, fieldName) {
     phone = checkString(phone, fieldName);
+
     if (!/^\d{3}-\d{3}-\d{4}$/.test(phone)) throw new Error('Phone number must use the ###-###-#### format.');
     return phone;
 };
 
 export function validateDate(date, fieldName) {
     date = checkString(date, fieldName);
+
     if (!validator.isDate(date, { format: 'MM/DD/YYYY', strictMode: true, delimiters: ['/'] })) {
         throw new Error(`${fieldName} must be a valid date in MM/DD/YYYY format.`);
     }
+
     return date;
 };
 
@@ -96,10 +103,11 @@ export function validateDuration(duration) {
     return value;
 };
 
-// Blank start -> 01/01/1900, blank end -> today
+
 export function validateDateRange(start, end) {
     start = start;
     end = end;
+
     start = validateDate(start, 'Start date');
     end = validateDate(end, 'End date');
 
@@ -128,11 +136,13 @@ export function validateWorkshopDates(open, close, start, end) {
 // PATCH validation
 export function validateChanges(original, values) {
     const changes = {};
+
     for (const key of Object.keys(values)) {
         const value = typeof values[key] === 'string' ? values[key].trim() : values[key];
         if (value !== original[key]) changes[key] = value;
     }
 
     if (Object.keys(changes).length === 0) throw new Error('You must change at least one field.');
+    
     return changes;
 };
